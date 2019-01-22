@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Create and clone objects</title>
+  <style>
+  .copyMe {
+    display: inline-block;
+    padding: 15px;
+    border: 1px solid black;
+    position: absolute;
+    max-width: 120px;
+    text-align: center;
+    height: 40px;
+    cursor: pointer;
+  }
+  .newb {
+    color: red;
+  }
+  #garbage {
+    position: absolute;
+    height: 100px;
+    width: 100px;
+    background-color: black;
+    left: 500px;
+    top: 300px;
+
+  }
+  </style>
+</head>
+<body>
+  <div id="garbage"></div>
+  <div class="copyMe">
+    Hello
+  </div>
+  <div class="copyMe">
+    Hello World
+  </div>
+  <div class="copyMe">
+    Javascript
+  </div>
+  <div class="copyMe">
+    Random
+  </div>
+  <div class="copyMe">
+    More content
+  </div>
+  <script type="text/javascript">
+    const garbage = document.getElementById("garbage");
+    const repeatedEl = document.querySelectorAll(".copyMe");
+    let holder = {};
+
+    repeatedEl.forEach(function(element, index) {
+      element.addEventListener("click", function(e) {
+        console.log(index);
+        holder.object = element.cloneNode(true);
+        holder.object.style.cursor = "move";
+        holder.object.classList.add("newb");
+        holder.object.style.backgroundColor = ranColor();
+        holder.object.style.left= element.offsetLeft + "px";
+        holder.object.style.top = element.offsetTop + 200 + "px";
+
+        holder.object.startX = element.offsetLeft;
+        holder.object.startY = element.offsetTop;
+
+        holder.object.moves = Math.floor(Math.random()*25);
+        holder.object.interval = setInterval(mover, 25);
+
+        function mover() {
+          if(holder.object.moves <=0) {
+            clearInterval(holder.object.interval);
+          } else {
+            holder.object.moves--;
+            holder.object.startY += 10;
+            holder.object.startX += 1;
+            holder.object.style.top = holder.object.startY + "px";
+            holder.object.style.left = holder.object.startX + "px";
+          }
+        }
+
+        document.body.appendChild(holder.object);
+        dragger(holder.object);
+      });
+      element.style.left = index * 100 + "px";
+    });
+
+    function ranColor() {
+      function c() {
+        let hex = Math.floor(Math.random()*256).toString(16);
+        hex = ("0" + String(hex)).substr(-2);
+        return hex;
+      }
+      return "#" + c() + c() + c();
+    }
+
+    function dragger(el) {
+      let pos = {};
+      el.onmousedown = dragMouse;
+      function dragMouse(e) {
+        pos.nx = e.clientX;
+        pos.ny = e.clientY;
+
+        document.onmouseup = function() {
+          document.onmouseup = null;
+          document.onmousemove = null;
+        }
+        document.onmousemove = function(e) {
+          pos.ox = pos.nx - e.clientX;
+          pos.oy = pos.ny - e.clientY;
+          pos.nx = e.clientX;
+          pos.ny = e.clientY;
+
+          if(isCollide(el)) {
+            el.onmousedown = null;
+            el.parentElement.removeChild(el);
+          }
+
+          el.style.top = (el.offsetTop - pos.oy) + "px";
+          el.style.left = (el.offsetLeft - pos.ox) + "px";
+        }
+      }
+    }
+    function isCollide(a) {
+      let aRect = a.getBoundingClientRect();
+      let bRect = garbage.getBoundingClientRect();
+      console.log(aRect);
+      return !((aRect.bottom < bRect.top) ||
+              (aRect.top > bRect.bottom) ||
+              (aRect.right < bRect.left) ||
+              (aRect.left > bRect.right)
+        );
+    }
+  </script>
+</body>
+</html>
